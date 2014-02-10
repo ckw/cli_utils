@@ -1,4 +1,7 @@
 module Errors
+  class ArgumentError < StandardError
+  end
+
   class ParseError < StandardError
   end
 end
@@ -9,8 +12,21 @@ class CliUtils
 
   def initialize(config_filepath=nil, commands_filepath=nil)
     init_commands(commands_filepath)
-    parse_options
+
+    begin
+      parse_options
+    rescue ParseError => e
+      render_error e
+    rescue ArgumentError => e
+      render_error e
+    end
+
     init_config(filepath=nil)
+  end
+
+  def render_error(err)
+    $stderr.puts err.message
+    exit 1
   end
 
   def init_commands(commands_filepath)
@@ -37,8 +53,11 @@ class CliUtils
           req_keys = (@commands[@command]['required'] || [])
           req_vals = ARGV[i + 1, req_keys.length]
 
-          raise ParseError unless req_keys.length == req_vals.length
-          raise ParseError if req_vals.map{|v| v.chr}.include?('-')
+          err_str1 = 'Missing required arguments'
+          raise ParseError.new(err_str1) unless req_keys.length == req_vals.length
+
+          err_str2 = 'Required arguments may not begin with "-"'
+          raise ParseError.new(err_str2) if req_vals.map{|v| v.chr}.include?('-')
 
           @required = {}
           req_keys.zip(req_vals).each{|(k,v)| @required[k] = processValue(v)}
@@ -61,7 +80,11 @@ class CliUtils
   end
 
   def processValue(val)
-    return File.open(val[1..-1],'r').read if val.start_with? '@'
+    if val.start_with? '@'
+      fn = tail(val)
+      raise ArgumentError.new("File not found: #{fn}") unless File.exist?(fn)
+      return File.open(fn,'r').read
+    end
     val
   end
 end
