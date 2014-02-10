@@ -40,11 +40,9 @@ class CliUtils
       next_arg = ARGV[i + 1]
 
       if arg[0] == '-'
-        if next_arg && !(is_command?(next_arg) || next_arg.start_with?('-'))
-          @options[arg.gsub(/\A-+/,'')] = processValue(next_arg)
-        else
-          @options[arg.gsub(/\A-+/,'')] = true
-        end
+        base_arg = arg.gsub(/\A-+/,'')
+        has_val = next_arg && !(is_command?(next_arg) || next_arg.start_with?('-'))
+        @options[base_arg] = has_val ? processValue(next_arg) : true
       else
         next if @command
 
