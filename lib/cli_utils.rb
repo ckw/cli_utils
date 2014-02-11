@@ -36,6 +36,7 @@ class CliUtils
 
   def parse_options
     @options = {}
+    command_index = nil
     ARGV.each_with_index {|arg, i|
       next_arg = ARGV[i + 1]
 
@@ -44,10 +45,15 @@ class CliUtils
         has_val = next_arg && !(is_command?(next_arg) || next_arg.start_with?('-'))
         @options[base_arg] = has_val ? processValue(next_arg) : true
       else
+        if dangling?(command_index, i, arg)
+          raise ParseError.new("Dangling command line element: #{arg}")
+        end
+
         next if @command
 
         if is_command?(arg)
           @command = arg
+          command_index = i
           req_keys = (@commands[@command]['required'] || [])
           req_vals = ARGV[i + 1, req_keys.length]
 
@@ -62,6 +68,26 @@ class CliUtils
         end
       end
     }
+  end
+
+  def dangling?(command_index, current_index, arg)
+    num_req = (@commands[@command]['required'] || []).length if @command
+    is_required =
+      command_index &&
+      (command_index + 1 + num_req) > current_index &&
+      current_index > command_index
+
+    is_value = current_index > 0 && ARGV[current_index - 1].start_with?('-')
+
+    !(is_value || is_required || is_command?(arg))
+  end
+
+  def usage
+    #TODO
+  end
+
+  def self.levenshtein_distance
+    #TODO
   end
 
   def is_command?(str)
