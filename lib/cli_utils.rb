@@ -79,7 +79,9 @@ class CliUtils
 
     is_value = current_index > 0 && ARGV[current_index - 1].start_with?('-')
 
-    !(is_value || is_required || is_command?(arg))
+    is_first_command = is_command?(arg) && !@command
+
+    !(is_value || is_required || is_first_command)
   end
 
   def usage
