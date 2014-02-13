@@ -21,7 +21,42 @@ class CliUtils
       render_error e
     end
 
-    init_config(filepath=nil)
+    init_config(config_filepath=nil)
+  end
+
+  def self.levenshtein_distance(s, t)
+    return 0 if s == t
+    return t.length if s.length == 0
+    return s.length if t.length == 0
+
+    a0 = (0..t.length + 1).to_a
+    a1 = []
+
+    (0..s.length - 1).each{|i|
+      a1[0] = i + 1
+
+      (0..t.length - 1).each{|j|
+        cost = (s[i] == t[j]) ? 0 : 1
+        a1[j + 1] = [a1[j] + 1, a0[j + 1] + 1, a0[j] + cost].min
+      }
+      a0 = a1.clone
+    }
+
+    return a1[t.length]
+  end
+
+  def self.test_lev
+    ts = [ [''    , 'abc', 3],
+           ['aaa' , 'aab', 1],
+           ['aa'  , 'aab', 1],
+           ['aaaa', 'aab', 2],
+           ['aaa' , 'aaa', 0],
+         ]
+
+    ts.each_with_index{|arr,i|
+      condition = levenshtein_distance(arr[0],arr[1]) == arr[2]
+      puts "Test #{i}: #{(condition ? 'success' : 'failure')}"
+    }
   end
 
   def render_error(err)
@@ -85,42 +120,6 @@ class CliUtils
 
   def usage
     #TODO
-  end
-
-  def self.levenshtein_distance(s, t)
-    return 0 if s == t
-    return t.length if s.length == 0
-    return s.length if t.length == 0
-
-    a0 = (0..t.length + 1).to_a
-    a1 = []
-
-    (0..s.length - 1).each{|i|
-      a1[0] = i + 1
-
-      (0..t.length - 1).each{|j|
-        cost = (s[i] == t[j]) ? 0 : 1
-        a1[j + 1] = [a1[j] + 1, a0[j + 1] + 1, a0[j] + cost].min
-      }
-      a0 = a1.clone
-    }
-
-    return a1[t.length]
-  end
-
-
-  def self.test_lev
-    ts = [ ['', 'abc', 3],
-           ['aaa', 'aab', 1],
-           ['aa', 'aab', 1],
-           ['aaaa', 'aab', 2],
-           ['aaa', 'aaa', 0],
-         ]
-
-    ts.each_with_index{|arr,i|
-      condition = levenshtein_distance(arr[0],arr[1]) == arr[2]
-      puts "Test #{i}: " << (condition ? 'success' : 'failure')
-    }
   end
 
   def is_command?(str)
