@@ -59,6 +59,10 @@ class CliUtils
     }
   end
 
+  def self.top_matches(str, candidates, top=4)
+    candidates.sort_by{|a| levenshtein_distance(str, a)}[0...top]
+  end
+
   def render_error(err)
     $stderr.puts err.message
     exit 1
