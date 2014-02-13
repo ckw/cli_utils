@@ -4,6 +4,9 @@ module Errors
 
   class ParseError < StandardError
   end
+
+  class MissingCommandError < StandardError
+  end
 end
 
 class CliUtils
@@ -19,6 +22,10 @@ class CliUtils
       render_error e
     rescue ArgumentError => e
       render_error e
+    rescue MissingCommandError => e
+      err = "#{e.message} is not a command. Did you mean:\n\n"
+      $stderr.puts("#{err}#{CliUtils::top_matches(e.message, @commands.keys).join("\n")}")
+      exit 1
     end
 
     init_config(config_filepath=nil)
@@ -80,12 +87,18 @@ class CliUtils
       next_arg = ARGV[i + 1]
 
       if arg[0] == '-'
-        base_arg = arg.gsub(/\A-+/,'')
-        has_val = next_arg && !(is_command?(next_arg) || next_arg.start_with?('-'))
-        @options[base_arg] = has_val ? processValue(next_arg) : true
+        if arg[1] == '-'
+          @options[arg[2..-1]] = processValue(next_arg)
+        else
+          @options[tail(arg)] = true
+        end
       else
         if dangling?(command_index, i, arg)
-          raise ParseError.new("Dangling command line element: #{arg}")
+          if ARGV.find{|e| @commands.has_key?(e)}
+            raise ParseError.new("Dangling command line element: #{arg}")
+          else
+            raise MissingCommandError.new(arg)
+          end
         end
 
         next if @command
@@ -116,7 +129,7 @@ class CliUtils
       (command_index + 1 + num_req) > current_index &&
       current_index > command_index
 
-    is_value = current_index > 0 && ARGV[current_index - 1].start_with?('-')
+    is_value = current_index > 0 && ARGV[current_index - 1].start_with?('--')
     is_first_command = is_command?(arg) && !@command
 
     !(is_value || is_required || is_first_command)
