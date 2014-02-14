@@ -10,7 +10,7 @@ module Errors
   class MissingCommandError < StandardError
   end
 
-  class MissingCommandsFileError < StandardError
+  class MissingFileError < StandardError
   end
 end
 
@@ -27,7 +27,7 @@ class CliUtils
       render_error e
     rescue ArgumentError => e
       render_error e
-    rescue MissingCommandsFileError => e
+    rescue MissingFileError => e
       render_error e
     rescue MissingCommandError => e
       err = "#{e.message} is not a command. Did you mean:\n\n"
@@ -93,7 +93,7 @@ class CliUtils
   def init_commands(commands_filepath)
     @commands ={}
     unless File.exist?(commands_filepath)
-      raise MissingCommandsFileError.new("Commands File not found: #{commands_filepath}")
+      raise MissingFileError.new("Commands File not found: #{commands_filepath}")
     end
 
     begin
