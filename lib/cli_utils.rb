@@ -1,3 +1,5 @@
+require 'json'
+
 module Errors
   class ArgumentError < StandardError
   end
@@ -7,20 +9,25 @@ module Errors
 
   class MissingCommandError < StandardError
   end
+
+  class MissingCommandsFileError < StandardError
+  end
 end
 
 class CliUtils
   include Errors
-  attr_accessor :options,:required,:command,:config
+  attr_accessor :commands, :options,:required,:command,:config
 
-  def initialize(config_filepath=nil, commands_filepath=nil)
-    init_commands(commands_filepath)
+  def initialize(config_filepath=nil, commands_filepath)
 
     begin
+      init_commands(commands_filepath)
       parse_options
     rescue ParseError => e
       render_error e
     rescue ArgumentError => e
+      render_error e
+    rescue MissingCommandsFileError => e
       render_error e
     rescue MissingCommandError => e
       err = "#{e.message} is not a command. Did you mean:\n\n"
@@ -75,9 +82,33 @@ class CliUtils
     exit 1
   end
 
+  def format_json(struct)
+    if (@config['defaults'] || {})['pretty_print'].to_s.downcase == 'true'
+      return Json.pretty_generate(struct, {'max_nesting' => 100})
+    else
+      return Json.generate(struct, {'max_nesting' => 100})
+    end
+  end
+
   def init_commands(commands_filepath)
-    #TODO
-    @commands = {'foo'=> {'required' => ['bar','baz']}}
+    @commands ={}
+    unless File.exist?(commands_filepath)
+      raise MissingCommandsFileError.new("Commands File not found: #{commands_filepath}")
+    end
+
+    begin
+      commands = JSON.parse(File.open(commands_filepath,'r').read)
+    rescue
+    end
+
+    raise ArgumentError.new("#{commands_filepath} is not an array") unless commands.is_a?(Array)
+
+    commands.each{|c|
+      mb_long = c['long']
+      mb_short = c['short']
+      @commands[mb_long] = c if mb_long
+      @commands[mb_short] = c if mb_short
+    }
   end
 
   def parse_options
