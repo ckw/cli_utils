@@ -16,7 +16,7 @@ end
 
 class CliUtils
   include Errors
-  attr_accessor :commands, :options,:required,:command,:config
+  attr_accessor :commands, :optional,:required,:command,:config
 
   def initialize(config_filepath=nil, commands_filepath)
 
@@ -113,16 +113,17 @@ class CliUtils
   end
 
   def parse_options
-    @options = {}
+    @optional = {}
     command_index = nil
     ARGV.each_with_index {|arg, i|
       next_arg = ARGV[i + 1]
 
       if arg[0] == '-'
         if arg[1] == '-'
-          @options[arg[2..-1]] = processValue(next_arg)
+          #TODO blows up if last element of ARGV
+          @optional[arg[2..-1]] = processValue(next_arg)
         else
-          @options[tail(arg)] = true
+          @optional[tail(arg)] = true
         end
       else
         if dangling?(command_index, i, arg)
