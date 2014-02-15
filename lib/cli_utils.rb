@@ -31,7 +31,8 @@ class CliUtils
       render_error e
     rescue MissingCommandError => e
       err = "#{e.message} is not a command. Did you mean:\n\n"
-      $stderr.puts("#{err}#{CliUtils::top_matches(e.message, @commands.keys).join("\n")}")
+      alts = CliUtils::top_matches(e.message, @commands.keys).map{|m| usage(m)}.join("\n")
+      $stderr.puts("#{err}#{alts}")
       exit 1
     end
 
@@ -168,8 +169,15 @@ class CliUtils
     !(is_value || is_required || is_first_command)
   end
 
-  def usage
-    #TODO
+  def usage(command)
+    c        = @commands[command]
+    long     = c['long']
+    short    = c['short']
+    required = c['required'].map{|r| "<#{r}>"}.join(' ')
+
+    optional = c['optional'].map{|o| "[#{o}#{o.start_with?('--') ? ' foo' : ''}]"}.join(' ')
+
+    "#{long} (#{short}) #{required} #{optional}".gsub(/ +/,' ')
   end
 
   def is_command?(str)
