@@ -23,6 +23,7 @@ class CliUtils
 
     begin
       init_commands(commands_filepath)
+      init_config(config_filepath)
       parse_options
     rescue ParseError => e
       render_error e
@@ -36,8 +37,6 @@ class CliUtils
       $stderr.puts("#{err}#{alts}")
       exit 1
     end
-
-    init_config(config_filepath=nil)
   end
 
   def self.levenshtein_distance(s, t)
