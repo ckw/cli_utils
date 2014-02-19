@@ -214,6 +214,3 @@ class CliUtils
     val
   end
 end
-
-c = CliUtils.new
-puts c.inspect
