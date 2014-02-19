@@ -42,7 +42,7 @@ class CliUtils
       render_error e
     rescue MissingCommandError => e
       err = "#{e.message} is not a command. Did you mean:\n\n"
-      alts = CliUtils::top_matches(e.message, @commands.keys, @s_count).map{|m| usage(m)}.join("\n")
+      alts = CliUtils::top_matches(e.message, @commands.keys, @s_count).map{|m| usage(m)}.uniq.join("\n")
       $stderr.puts("#{err}#{alts}")
       exit 1
     end
@@ -83,6 +83,7 @@ class CliUtils
     }
   end
 
+  #TODO can return duplicates if the long and short commands are similar
   def self.top_matches(str, candidates, top=4)
     candidates.sort_by{|a| levenshtein_distance(str, a)}[0...top]
   end
