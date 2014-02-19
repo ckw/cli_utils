@@ -102,6 +102,8 @@ class CliUtils
 
   def init_commands(commands_filepath)
     @commands ={}
+    return unless commands_filepath
+
     unless File.exist?(commands_filepath)
       raise MissingFileError.new("Commands File not found: #{commands_filepath}")
     end
