@@ -16,9 +16,10 @@ end
 
 class CliUtils
   include Errors
-  attr_accessor :commands, :optional,:required,:command,:config
+  attr_accessor :commands, :command, :optional,:required, :config
 
-  def initialize(config_filepath=nil, commands_filepath)
+  def initialize(commands_filepath=nil, config_filepath=nil, suggestions_count=nil)
+    @s_count = suggestions_count || 4
 
     begin
       init_commands(commands_filepath)
@@ -31,7 +32,7 @@ class CliUtils
       render_error e
     rescue MissingCommandError => e
       err = "#{e.message} is not a command. Did you mean:\n\n"
-      alts = CliUtils::top_matches(e.message, @commands.keys).map{|m| usage(m)}.join("\n")
+      alts = CliUtils::top_matches(e.message, @commands.keys, @s_count).map{|m| usage(m)}.join("\n")
       $stderr.puts("#{err}#{alts}")
       exit 1
     end
