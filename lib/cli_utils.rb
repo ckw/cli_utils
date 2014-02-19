@@ -16,7 +16,7 @@ end
 
 class CliUtils
   include Errors
-  attr_accessor :commands, :command, :optional,:required, :config
+  attr_accessor :commands, :command, :optional, :required, :config
 
   def initialize(commands_filepath=nil, config_filepath=nil, suggestions_count=nil)
     @s_count = suggestions_count || 4
