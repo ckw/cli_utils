@@ -25,6 +25,15 @@ class CliUtils
       init_commands(commands_filepath)
       init_config(config_filepath)
       parse_options
+
+      if @command
+        method = @commands[@command]['eval']
+        if method
+          eval method
+          exit
+        end
+      end
+
     rescue ParseError => e
       render_error e
     rescue ArgumentError => e
