@@ -132,7 +132,7 @@ class CliUtils
 
       if arg[0] == '-'
         if arg[1] == '-'
-          #TODO blows up if last element of ARGV
+          raise ParseError.new("Missing argument to: #{arg}") unless next_arg
           @optional[arg[2..-1]] = processValue(next_arg)
         else
           @optional[tail(arg)] = true
