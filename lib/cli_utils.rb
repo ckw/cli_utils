@@ -161,6 +161,7 @@ class CliUtils
           raise ParseError.new(err_str2) if req_vals.map{|v| v.chr}.include?('-')
 
           @required = {}
+          #old versions of ruby do not have a to_h array method
           req_keys.zip(req_vals).each{|(k,v)| @required[k] = processValue(v)}
         end
       end
