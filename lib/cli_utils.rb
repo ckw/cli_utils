@@ -90,6 +90,7 @@ class CliUtils
 
   def render_error(err)
     $stderr.puts err.message
+    $stderr.puts usage(@command) if @command
     exit 1
   end
 
