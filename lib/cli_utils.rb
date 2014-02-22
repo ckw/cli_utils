@@ -185,13 +185,13 @@ class CliUtils
 
   def usage(command)
     c        = @commands[command]
-    long     = c['long']
-    short    = c['short']
-    required = c['required'].map{|r| "<#{r}>"}.join(' ')
+    long     = c['long'] || ''
+    short    = c['short'] ? "(#{c['short']})" : ''
+    required = (c['required'] || []).map{|r| "<#{r}>"}.join(' ')
 
-    optional = c['optional'].map{|o| "[#{o}#{o.start_with?('--') ? ' foo' : ''}]"}.join(' ')
+    optional = (c['optional'] || []).map{|o| "[#{o}#{o.start_with?('--') ? ' foo' : ''}]"}.join(' ')
 
-    "#{long} (#{short}) #{required} #{optional}".gsub(/ +/,' ')
+    "#{long} #{short} #{required} #{optional}".gsub(/ +/,' ')
   end
 
   def is_command?(str)
