@@ -16,7 +16,7 @@ end
 
 class CliUtils
   include Errors
-  attr_accessor :commands, :command, :optional, :required, :config
+  attr_accessor :commands, :command, :optional, :required, :config, :eval
 
   def initialize(commands_filepath=nil, config_filepath=nil, suggestions_count=nil)
     @s_count = suggestions_count || 4
@@ -27,11 +27,7 @@ class CliUtils
       parse_options
 
       if @command
-        method = @commands[@command]['eval']
-        if method
-          eval method
-          exit
-        end
+        @eval = @commands[@command]['eval']
       end
 
     rescue ParseError => e
