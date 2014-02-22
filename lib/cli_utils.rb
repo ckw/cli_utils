@@ -16,7 +16,7 @@ end
 
 class CliUtils
   include Errors
-  attr_accessor :commands, :command, :optional, :required, :config
+  attr_accessor :commands, :command, :optional, :required, :config, :eval
 
   def initialize(commands_filepath=nil, config_filepath=nil, suggestions_count=nil)
     @s_count = suggestions_count || 4
@@ -27,11 +27,7 @@ class CliUtils
       parse_options
 
       if @command
-        method = @commands[@command]['eval']
-        if method
-          eval method
-          exit
-        end
+        @eval = @commands[@command]['eval']
       end
 
     rescue ParseError => e
@@ -113,7 +109,7 @@ class CliUtils
     begin
       commands = JSON.parse(File.open(commands_filepath,'r').read)
     rescue JSON::ParserError => e
-      raise ArgumentError.new("#{commands_filepath} contents is not valid JSON:\n#{e.message}")
+      raise ArgumentError.new("#{commands_filepath} contents is not valid JSON")
     end
 
     raise ArgumentError.new("#{commands_filepath} is not an array") unless commands.is_a?(Array)
@@ -185,13 +181,13 @@ class CliUtils
 
   def usage(command)
     c        = @commands[command]
-    long     = c['long']
-    short    = c['short']
-    required = c['required'].map{|r| "<#{r}>"}.join(' ')
+    long     = c['long'] || ''
+    short    = c['short'] ? "(#{c['short']})" : ''
+    required = (c['required'] || []).map{|r| "<#{r}>"}.join(' ')
 
-    optional = c['optional'].map{|o| "[#{o}#{o.start_with?('--') ? ' foo' : ''}]"}.join(' ')
+    optional = (c['optional'] || []).map{|o| "[#{o}#{o.start_with?('--') ? ' foo' : ''}]"}.join(' ')
 
-    "#{long} (#{short}) #{required} #{optional}".gsub(/ +/,' ')
+    "#{long} #{short} #{required} #{optional}".gsub(/ +/,' ')
   end
 
   def is_command?(str)
