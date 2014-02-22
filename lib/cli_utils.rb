@@ -113,7 +113,7 @@ class CliUtils
     begin
       commands = JSON.parse(File.open(commands_filepath,'r').read)
     rescue JSON::ParserError => e
-      raise ArgumentError.new("#{commands_filepath} contents is not valid JSON:\n#{e.message}")
+      raise ArgumentError.new("#{commands_filepath} contents is not valid JSON")
     end
 
     raise ArgumentError.new("#{commands_filepath} is not an array") unless commands.is_a?(Array)
